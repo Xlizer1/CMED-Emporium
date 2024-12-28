@@ -15,9 +15,12 @@ import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import PersonIcon from "@mui/icons-material/PersonOutlined";
 import { useRouter } from "next/navigation";
 import logo from "@/assets/images/Logo.png";
+import logo1 from "@/assets/images/Logo1.png";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import FolderCopyIcon from '@mui/icons-material/FolderCopy';
+import { GoHome } from "react-icons/go";
 
 const drawerWidth = 240;
 
@@ -26,9 +29,9 @@ export default function Sidebar() {
     const mode = useSelector((state: RootState) => state.theme.mode);
 
     const menuItems = [
-        { text: "Home", icon: <HomeIcon />, path: "/" },
-        { text: "Profile", icon: <PersonIcon />, path: "/profile" },
-        { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
+        { text: "Home", icon: <GoHome style={{ fontSize: 26 }} />, path: "/" },
+        { text: "Files", icon: <FolderCopyIcon />, path: "/files" },
+        // { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
     ];
 
     return (
@@ -57,24 +60,27 @@ export default function Sidebar() {
                     <Box
                         sx={{
                             display: "flex",
-                            justifyContent: "center",
+                            justifyContent: "flex-start",
                             alignItems: "center",
                             height: "100%",
+                            width: "100%",
                             gap: 2,
+                            marginTop: 2,
+                            paddingLeft: 2
                         }}
                     >
                         <Image
-                            src={logo}
-                            width={40}
-                            height={40}
+                            src={mode === "dark" ? logo1 : logo}
+                            width={60}
+                            height={60}
                             alt="Picture of the author"
                         />
                         <Box>
                             <Typography sx={{ fontWeight: "bold" }}>
-                                Integrated Solutions
+                                CMED
                             </Typography>
-                            <Typography sx={{ fontSize: 12, color: "#737373" }}>
-                                Ticket System
+                            <Typography sx={{ fontSize: 10, color: "#737373" }}>
+                                Emporium
                             </Typography>
                         </Box>
                     </Box>
