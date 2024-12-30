@@ -31,8 +31,8 @@ import DownloadIcon from "@mui/icons-material/Download";
 import EditIcon from "@mui/icons-material/Edit";
 import CancelIcon from "@mui/icons-material/Cancel";
 
-import folderIcon from "../";
-import folder_filesIcon from "../../assets/img/FileExplorerIcons/folder_files.png";
+import folderIcon from "@/assets/FileExplorerIcons/folder.png";
+import folder_filesIcon from "@/assets/FileExplorerIcons/folder_files.png";
 import fileIcon from "../../assets/img/FileExplorerIcons/file.png";
 import csvIcon from "../../assets/img/FileExplorerIcons/csv.png";
 import docIcon from "../../assets/img/FileExplorerIcons/doc.png";
