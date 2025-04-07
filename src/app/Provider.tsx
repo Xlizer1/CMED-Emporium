@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 import { Provider } from "react-redux";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Box from '@mui/material/Box';
-import { useSelector } from 'react-redux';
+import Box from "@mui/material/Box";
+import { useSelector } from "react-redux";
 import store, { RootState } from "@/store/store";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -15,7 +15,7 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
 
   const theme = createTheme({
     palette: {
-      mode: mode as 'light' | 'dark'
+      mode: mode as "light" | "dark",
     },
   });
 
@@ -23,7 +23,7 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <ThemeInitializer /> {/* Add this line */}
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: "flex" }}>
         <Navbar />
         <Sidebar />
         <Box
