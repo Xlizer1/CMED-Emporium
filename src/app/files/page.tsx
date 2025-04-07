@@ -1,3 +1,4 @@
+import { FileManager } from "@/components/FileManager/FileManager";
 import { Box } from "@mui/material";
 import React from "react";
 
@@ -8,7 +9,7 @@ const page = () => {
                 paddingTop: 8,
             }}
         >
-            
+            <FileManager />
         </Box>
     );
 };
