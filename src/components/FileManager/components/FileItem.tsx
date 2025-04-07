@@ -93,7 +93,7 @@ export const FileItem: React.FC<FileItemProps> = ({
     >
       <Box
         component="img"
-        src={icon.img}
+        src={icon.img.src}
         alt={`${file.name} icon`}
         sx={{
           width: "45px",

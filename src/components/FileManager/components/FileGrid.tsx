@@ -169,7 +169,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
           >
             <Box
               component="img"
-              src={folderIcon}
+              src={folderIcon.src}
               alt="New folder"
               sx={{
                 width: "45px",

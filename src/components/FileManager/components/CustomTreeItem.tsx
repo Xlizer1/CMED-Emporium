@@ -2,7 +2,7 @@
 import React, { forwardRef } from "react";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
 import { Collapse, Typography, Box } from "@mui/material";
-import { useTreeItem } from "@mui/x-tree-view/useTreeItem";
+import { useTreeItem } from "@mui/x-tree-view";
 import clsx from "clsx";
 import FolderIcon from "@mui/icons-material/Folder";
 import { Folder } from "../types/types";
@@ -143,7 +143,11 @@ export const CustomTreeItem = forwardRef<HTMLLIElement, CustomTreeItemProps>(
         label={label}
         ref={ref}
         ContentComponent={(contentProps) => (
-          <CustomContent {...contentProps} onSelect={handleSelect} />
+          <CustomContent
+            {...contentProps}
+            onSelect={handleSelect}
+            label={contentProps.label || label}
+          />
         )}
         onContextMenu={(e) => onContextMenu(folder, e)}
         TransitionComponent={TransitionComponent}

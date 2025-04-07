@@ -68,7 +68,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
     >
       <Box
         component="img"
-        src={hasSubs ? folder_filesIcon : folderIcon}
+        src={hasSubs ? folder_filesIcon.src : folderIcon.src}
         alt={`${folder.name} folder icon`}
         sx={{
           width: "45px",

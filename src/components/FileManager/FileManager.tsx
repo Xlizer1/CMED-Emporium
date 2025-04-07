@@ -188,6 +188,7 @@ export function FileManager() {
         <Toolbar
           mode={mode}
           arrowClicked={arrowClicked}
+          arrowClickedCount={arrowClickedCount}
           navigationArr={navigationArr}
           searchBoxOptions={searchBoxOptions}
           searchValue={searchValue}

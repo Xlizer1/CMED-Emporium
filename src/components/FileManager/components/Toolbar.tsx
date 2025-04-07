@@ -10,6 +10,7 @@ import { FileSearchOption, Folder } from "../types/types";
 interface ToolbarProps {
   mode: string;
   arrowClicked: boolean;
+  arrowClickedCount: number;
   navigationArr: Folder[];
   searchBoxOptions: FileSearchOption[];
   searchValue: string;
@@ -28,6 +29,7 @@ interface ToolbarProps {
 export const Toolbar: React.FC<ToolbarProps> = ({
   mode,
   arrowClicked,
+  arrowClickedCount,
   navigationArr,
   searchBoxOptions,
   searchValue,
@@ -73,7 +75,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               setArrowClicked(true);
               handleDeleteLast();
               setSelectedFolder(navigationArr[navigationArr?.length - 2]);
-              setArrowClickedCount((prev) => prev + 1);
+              setArrowClickedCount(arrowClickedCount + 1);
             }
           }}
           aria-label="Go back"
@@ -134,10 +136,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               },
             }}
             options={searchBoxOptions}
-            getOptionLabel={(option) => option?.name || ""}
+            getOptionLabel={(option) =>
+              typeof option === "string" ? option : option?.name || ""
+            }
             filterOptions={(options) => options}
             onChange={(e, newVal) => {
-              if (newVal) setSelectedName(newVal?.name);
+              if (newVal && typeof newVal !== "string")
+                setSelectedName(newVal.name);
             }}
             onInputChange={(e, newInputValue) => {
               handleSearchChange(newInputValue);
