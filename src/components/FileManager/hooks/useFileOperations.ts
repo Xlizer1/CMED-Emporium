@@ -1,11 +1,13 @@
-// useFileOperations.ts - Custom hook for file operations
+// src/components/FileManager/hooks/useFileOperations.ts
 import { useState } from "react";
 import { Folder } from "../types/types";
+import { fileService } from "@/services/fileService";
+import { toast } from "react-toastify";
 
 /**
  * Custom hook that provides file operation functions and related state
  */
-export const useFileOperations = () => {
+export const useFileOperations = (refreshData: () => Promise<void>) => {
   const [showFile, setShowFile] = useState<boolean>(false);
   const [addForm, setAddForm] = useState<boolean>(false);
   const [createNewFolder, setCreateNewFolder] = useState<boolean>(false);
@@ -13,6 +15,8 @@ export const useFileOperations = () => {
   const [folderName, setFolderName] = useState<string>("");
   const [specifyfolderAccessForm, setSpecifyfolderAccessForm] =
     useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [selectedFile, setSelectedFile] = useState<Folder | null>(null);
 
   /**
    * Adds a new file
@@ -25,16 +29,24 @@ export const useFileOperations = () => {
   /**
    * Creates a new folder with the name stored in state
    */
-  const handleCreateNewFolder = async (): Promise<void> => {
+  const handleCreateNewFolder = async (parentId?: number): Promise<void> => {
+    if (!folderName.trim()) {
+      toast.error("Folder name cannot be empty");
+      return;
+    }
+
     try {
-      // Here you would make an API call to create the folder
-      console.log("Creating new folder:", folderName);
-      // After successful API call:
+      setIsLoading(true);
+      await fileService.createFolder(folderName, parentId);
+      toast.success(`Folder "${folderName}" created successfully`);
       setCreateNewFolder(false);
       setFolderName("");
+      await refreshData();
     } catch (error) {
       console.error("Error creating folder:", error);
-      // Handle error (show toast notification, etc.)
+      toast.error("Failed to create folder");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,45 +68,44 @@ export const useFileOperations = () => {
    * Updates a file or folder
    */
   const updateFile = (file: Folder): void => {
+    setSelectedFile(file);
     setAddForm(true);
   };
 
+  /**
+   * Uploads files to a specific folder
+   * @param files Files to upload
+   * @param folderId Target folder ID
+   */
   const uploadFiles = async (
     files: File[],
     folderId: number
   ): Promise<void> => {
     try {
-      // Create a FormData object to send the files
-      const formData = new FormData();
+      setIsLoading(true);
 
-      // Append each file to the FormData
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
+      // Filter out video files
+      const allowedFiles = files.filter(
+        (file) => !file.type.startsWith("video/")
+      );
 
-      // Add the folder ID to know where to store the files
-      formData.append("folderId", folderId.toString());
-
-      // In a real app, you would send this to your API
-      console.log("Uploading files to folder:", folderId, files);
-
-      // Example API call (uncomment and adapt when you have your API ready)
-      /*
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Upload failed');
+      if (allowedFiles.length < files.length) {
+        toast.warning("Video files are not allowed and were skipped");
       }
-      
-      // Refresh the file list after successful upload
-      getData();
-      */
+
+      if (allowedFiles.length === 0) {
+        toast.error("No valid files to upload");
+        return;
+      }
+
+      await fileService.uploadMultipleFiles(allowedFiles, folderId);
+      toast.success(`${allowedFiles.length} files uploaded successfully`);
+      await refreshData();
     } catch (error) {
       console.error("Error uploading files:", error);
-      // Handle error (show toast notification, etc.)
+      toast.error("Failed to upload files");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,12 +114,18 @@ export const useFileOperations = () => {
    */
   const deleteFileOrFolder = async (item: Folder): Promise<void> => {
     try {
-      // Here you would make an API call to delete the item
-      console.log("Deleting item:", item);
-      // After successful deletion, you would refresh the file list
+      setIsLoading(true);
+      await fileService.deleteItem(item);
+
+      const itemType = item.file_name ? "File" : "Folder";
+      toast.success(`${itemType} "${item.name}" deleted successfully`);
+
+      await refreshData();
     } catch (error) {
       console.error("Error deleting item:", error);
-      // Handle error (show toast notification, etc.)
+      toast.error("Failed to delete item");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -116,12 +133,34 @@ export const useFileOperations = () => {
    * Downloads a file
    */
   const downloadFile = async (item: Folder): Promise<void> => {
+    if (!item.id || !item.file_name) {
+      toast.error("Invalid file");
+      return;
+    }
+
     try {
-      // Here you would make an API call to download the file
-      console.log("Downloading file:", item);
+      setIsLoading(true);
+      const blob = await fileService.downloadFile(item.id);
+
+      // Create a download link and trigger the download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = item.name;
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success(`File "${item.name}" downloaded successfully`);
     } catch (error) {
       console.error("Error downloading file:", error);
-      // Handle error (show toast notification, etc.)
+      toast.error("Failed to download file");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -139,6 +178,9 @@ export const useFileOperations = () => {
     setFolderName,
     specifyfolderAccessForm,
     setSpecifyfolderAccessForm,
+    isLoading,
+    selectedFile,
+    setSelectedFile,
 
     // Functions
     addFile,

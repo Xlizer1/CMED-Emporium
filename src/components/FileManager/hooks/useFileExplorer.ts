@@ -1,55 +1,8 @@
-// useFileExplorer.ts - Custom hook for file tree management
+// src/components/FileManager/hooks/useFileExplorer.ts
 import { useState, useEffect, useCallback } from "react";
 import { Folder } from "../types/types";
-
-// Sample data for demo purposes
-const sampleTreeData: Folder[] = [
-  {
-    id: 1,
-    name: "Documents",
-    level: 0,
-    nodeId: "1",
-    sub_classifications: [
-      {
-        id: 2,
-        name: "Reports",
-        level: 1,
-        nodeId: "1-0",
-        sub_classifications: [
-          {
-            id: 4,
-            name: "Annual Report.pdf",
-            level: 2,
-            nodeId: "1-0-0",
-            file_name: "Annual Report.pdf",
-          },
-        ],
-      },
-      {
-        id: 3,
-        name: "Projects",
-        level: 1,
-        nodeId: "1-1",
-        sub_classifications: [],
-      },
-    ],
-  },
-  {
-    id: 5,
-    name: "Images",
-    level: 0,
-    nodeId: "2",
-    sub_classifications: [
-      {
-        id: 6,
-        name: "Logo.png",
-        level: 1,
-        nodeId: "2-0",
-        file_name: "Logo.png",
-      },
-    ],
-  },
-];
+import { fileService } from "@/services/fileService";
+import { toast } from "react-toastify";
 
 /**
  * Custom hook for file and folder exploration functionality
@@ -63,6 +16,7 @@ export const useFileExplorer = () => {
   const [arrowClickedCount, setArrowClickedCount] = useState<number>(2);
   const [lastFolder, setLastFolder] = useState<Folder | null>(null);
   const [selectedName, setSelectedName] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   /**
    * Adds nodeId to all folders in the file tree
@@ -85,62 +39,52 @@ export const useFileExplorer = () => {
    */
   const getData = useCallback(async (): Promise<void> => {
     try {
-      // In a real application, you would fetch data from an API
-      // For now, use sample data
-      const updatedData = addNodeId(sampleTreeData);
+      setIsLoading(true);
+
+      // Get folder tree structure for the sidebar
+      const folderTree = await fileService.getAllFolders();
+
+      // Add nodeId for TreeView component
+      const updatedData = addNodeId(folderTree);
       setTreeView(updatedData);
+
+      // If no folder is selected yet, select the root folder
+      if (!selectedFolder?.id && updatedData.length > 0) {
+        setSelectedFolder(updatedData[0]);
+      }
     } catch (error) {
       console.error("Error fetching file data:", error);
-      // Handle error (show toast notification, etc.)
+      toast.error("Failed to load folders");
+    } finally {
+      setIsLoading(false);
     }
-  }, [addNodeId]);
+  }, [addNodeId, selectedFolder?.id]);
 
   /**
-   * Finds the last folder in each tree branch
+   * Fetches contents of a specific folder
    */
-  const getLastFolderFromObjects = useCallback(
-    (objects: Folder[]): Folder | null => {
-      let lastFolder: Folder | null = null;
+  const getFolderContents = useCallback(
+    async (folderId?: number): Promise<void> => {
+      try {
+        setIsLoading(true);
+        const contents = await fileService.getFolderContents(folderId);
 
-      objects.forEach((obj) => {
-        const folder = getLastFolder(obj);
-        if (
-          folder &&
-          (!lastFolder ||
-            (folder.sub_classifications?.length || 0) >
-              (lastFolder.sub_classifications?.length || 0))
-        ) {
-          lastFolder = folder;
+        // Update the selected folder with its contents
+        if (selectedFolder?.id === folderId) {
+          setSelectedFolder({
+            ...selectedFolder,
+            sub_classifications: contents,
+          });
         }
-      });
-
-      return lastFolder;
-    },
-    []
-  );
-
-  /**
-   * Helper function to find the last folder in a tree branch
-   */
-  const getLastFolder = (obj: Folder): Folder | null => {
-    if (!obj.sub_classifications || obj.sub_classifications.length === 0) {
-      return obj.file_name ? null : obj;
-    } else {
-      for (let i = obj.sub_classifications.length - 1; i >= 0; i--) {
-        const sub = obj.sub_classifications[i];
-        if (!sub.file_name) {
-          if (obj.level === 2) {
-            obj.sub_classifications.reverse();
-          }
-          const lastSubFolder = getLastFolder(sub);
-          if (lastSubFolder) {
-            return lastSubFolder;
-          }
-        }
+      } catch (error) {
+        console.error("Error fetching folder contents:", error);
+        toast.error("Failed to load folder contents");
+      } finally {
+        setIsLoading(false);
       }
-    }
-    return null;
-  };
+    },
+    [selectedFolder]
+  );
 
   /**
    * Find the path to a folder by its ID
@@ -194,12 +138,12 @@ export const useFileExplorer = () => {
     getData();
   }, [getData]);
 
-  // Set initial selected folder
+  // Load folder contents when selected folder changes
   useEffect(() => {
-    if (treeView?.length > 0) {
-      setSelectedFolder(treeView[0]);
+    if (selectedFolder?.id) {
+      getFolderContents(selectedFolder.id);
     }
-  }, [treeView?.length]);
+  }, [selectedFolder?.id, getFolderContents]);
 
   // Update navigation array when selected folder changes
   useEffect(() => {
@@ -207,12 +151,6 @@ export const useFileExplorer = () => {
       setNavigationArr((prev) => [...prev, selectedFolder]);
     }
   }, [selectedFolder?.id, arrowClicked]);
-
-  // Set last folder and folder path
-  useEffect(() => {
-    const lastFolder = getLastFolderFromObjects(treeView);
-    setLastFolder(lastFolder);
-  }, [treeView, getLastFolderFromObjects]);
 
   // Update folder path when selected folder changes
   useEffect(() => {
@@ -224,7 +162,6 @@ export const useFileExplorer = () => {
       );
       if (folderPathArray) {
         setFolderPath(folderPathArray);
-        setSelectedFolder(folderPathArray[folderPathArray?.length - 1]);
       }
     }
   }, [treeView, selectedFolder?.id, findFolderById]);
@@ -246,9 +183,11 @@ export const useFileExplorer = () => {
     lastFolder,
     selectedName,
     setSelectedName,
+    isLoading,
 
     // Functions
     getData,
+    getFolderContents,
     handleDeleteLast,
     findFolderById,
   };

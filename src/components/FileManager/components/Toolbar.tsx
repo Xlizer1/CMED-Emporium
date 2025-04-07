@@ -1,10 +1,18 @@
-// Toolbar.tsx - Main toolbar for the file manager
+// src/components/FileManager/components/Toolbar.tsx
 import React from "react";
-import { Box, Typography, Autocomplete, TextField } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Autocomplete,
+  TextField,
+  Button,
+} from "@mui/material";
 import ArrowCircleLeftIcon from "@mui/icons-material/ArrowCircleLeft";
 import CachedIcon from "@mui/icons-material/Cached";
 import SearchIcon from "@mui/icons-material/Search";
 import FolderIcon from "@mui/icons-material/Folder";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import { FileSearchOption, Folder } from "../types/types";
 
 interface ToolbarProps {
@@ -21,6 +29,10 @@ interface ToolbarProps {
   setArrowClickedCount: (count: number) => void;
   setArrowClicked: (clicked: boolean) => void;
   getData: () => Promise<void>;
+  onUploadClick: () => void;
+  onNewFolderClick: () => void;
+  selectedFolder: Folder | null;
+  isLoading: boolean;
 }
 
 /**
@@ -40,6 +52,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   setArrowClickedCount,
   setArrowClicked,
   getData,
+  onUploadClick,
+  onNewFolderClick,
+  selectedFolder,
+  isLoading,
 }) => {
   return (
     <Box
@@ -50,7 +66,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         width: "100%",
         padding: 3,
         paddingY: 2,
-        gap: 3,
+        gap: 2,
         mb: 1,
         borderBottom: "1px solid #b3b3b3",
       }}
@@ -60,7 +76,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         sx={{
           display: "flex",
           alignItems: "center",
-          marginRight: 1,
           gap: 1,
         }}
       >
@@ -113,7 +128,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       {/* Search box */}
       <Box
         sx={{
-          width: "300px",
+          flexGrow: 1,
+          display: "flex",
+          justifyContent: "center",
         }}
       >
         <Box
@@ -123,14 +140,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             alignItems: "center",
             borderRadius: "3px",
             paddingX: 1,
+            width: "300px",
           }}
         >
           <Autocomplete
             sx={{
-              ml: 1.5,
-              mt: 1,
-              mb: 1,
-              width: "95%",
+              width: "100%",
               "& .MuiFormLabel-root,& .MuiInputBase-input": {
                 fontFamily: "Cairo-Medium",
               },
@@ -184,6 +199,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   sx: {
                     height: "35px",
                   },
+                  endAdornment: <SearchIcon sx={{ color: "gray" }} />,
                 }}
                 InputLabelProps={{
                   ...params.InputLabelProps,
@@ -203,10 +219,30 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               />
             )}
           />
-          <SearchIcon
-            sx={{ position: "absolute", right: "20px", color: "gray" }}
-          />
         </Box>
+      </Box>
+
+      {/* Action buttons */}
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <Button
+          variant="contained"
+          startIcon={<CloudUploadIcon />}
+          onClick={onUploadClick}
+          disabled={!selectedFolder?.id || isLoading}
+          color="primary"
+          size="small"
+        >
+          Upload
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<CreateNewFolderIcon />}
+          onClick={onNewFolderClick}
+          disabled={!selectedFolder?.id || isLoading}
+          size="small"
+        >
+          New Folder
+        </Button>
       </Box>
     </Box>
   );

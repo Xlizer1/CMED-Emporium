@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { Box, Typography } from "@mui/material";
+import {
+  Box,
+  Typography,
+  LinearProgress,
+  Backdrop,
+  CircularProgress,
+} from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 
@@ -17,6 +23,7 @@ import { OptionMenu } from "./components/OptionMenu";
 import { FileGrid } from "./components/FileGrid";
 import { BreadcrumbPath } from "./components/BreadcrumbPath";
 import { Toolbar } from "./components/Toolbar";
+import { UploadDialog } from "./components/UploadDialog";
 import { TreeView } from "@mui/x-tree-view/TreeView";
 import { Box as MuiBox } from "@mui/material";
 import { FaFolder, FaFolderOpen } from "react-icons/fa";
@@ -39,6 +46,7 @@ export function FileManager() {
     false
   );
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [showUploadDialog, setShowUploadDialog] = useState<boolean>(false);
 
   // Custom hooks for functionality
   const {
@@ -53,6 +61,7 @@ export function FileManager() {
     setArrowClickedCount,
     getData,
     handleDeleteLast,
+    isLoading: isLoadingFolders,
   } = useFileExplorer();
 
   const {
@@ -72,7 +81,9 @@ export function FileManager() {
     updateFile,
     deleteFileOrFolder,
     downloadFile,
-  } = useFileOperations();
+    uploadFiles,
+    isLoading: isLoadingFileOps,
+  } = useFileOperations(getData);
 
   const {
     menuOpen,
@@ -86,6 +97,9 @@ export function FileManager() {
 
   const { searchValue, searchBoxOptions, handleSearchChange, setSelectedName } =
     useFileSearch(treeView);
+
+  // Combined loading state
+  const isLoading = isLoadingFolders || isLoadingFileOps;
 
   // Handle clicks outside of folders (to clear highlights)
   useEffect(() => {
@@ -108,6 +122,24 @@ export function FileManager() {
   // Handle folder name input changes
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFolderName(event.target.value);
+  };
+
+  // Handle file upload button click
+  const handleUploadClick = () => {
+    setShowUploadDialog(true);
+  };
+
+  // Handle new folder button click
+  const handleNewFolderClick = () => {
+    setCreateNewFolder(true);
+  };
+
+  // Handle file upload submission
+  const handleUploadSubmit = async (files: File[]) => {
+    if (selectedFolder?.id) {
+      await uploadFiles(files, selectedFolder.id);
+      setShowUploadDialog(false);
+    }
   };
 
   // Recursively render tree items
@@ -181,21 +213,30 @@ export function FileManager() {
 
         // Handle dropped files
         if (e.dataTransfer.files.length > 0 && selectedFolder?.id) {
-          // Here you would handle the files
           const droppedFiles = Array.from(e.dataTransfer.files);
-          console.log("Dropped files:", droppedFiles);
-
-          // You'd typically upload these files to your backend
-          // For example: uploadFiles(droppedFiles, selectedFolder.id);
+          uploadFiles(droppedFiles, selectedFolder.id);
         }
       }}
       sx={{
         height: "97.3vh",
         paddingTop: 7,
         userSelect: "none",
+        position: "relative",
       }}
       ref={folderRef}
     >
+      {isLoading && (
+        <LinearProgress
+          sx={{
+            position: "absolute",
+            top: 7,
+            left: 0,
+            right: 0,
+            zIndex: 9999,
+          }}
+        />
+      )}
+
       <Box
         sx={{
           height: "100%",
@@ -205,7 +246,7 @@ export function FileManager() {
           },
         }}
       >
-        {/* Toolbar with navigation, title and search */}
+        {/* Toolbar with navigation, title, search and action buttons */}
         <Toolbar
           mode={mode}
           arrowClicked={arrowClicked}
@@ -220,6 +261,10 @@ export function FileManager() {
           setArrowClickedCount={setArrowClickedCount}
           setArrowClicked={setArrowClicked}
           getData={getData}
+          onUploadClick={handleUploadClick}
+          onNewFolderClick={handleNewFolderClick}
+          selectedFolder={selectedFolder}
+          isLoading={isLoading}
         />
 
         <Box sx={{ display: "flex", height: "100%" }}>
@@ -299,7 +344,9 @@ export function FileManager() {
                 rightClickedItem={rightClickedItem}
                 folderName={folderName}
                 handleChange={handleChange}
-                handleCreateNewFolderByContextMenuOption={handleCreateNewFolder}
+                handleCreateNewFolderByContextMenuOption={() =>
+                  handleCreateNewFolder(selectedFolder?.id)
+                }
                 setDoubleClickedItem={setDoubleClickedItem}
                 setShowFile={setShowFile}
                 setSelectedFolder={setSelectedFolder}
@@ -336,6 +383,8 @@ export function FileManager() {
           </Box>
         </Box>
       </Box>
+
+      {/* Drag overlay */}
       {isDragging && (
         <Box
           sx={{
@@ -377,12 +426,29 @@ export function FileManager() {
           </Typography>
         </Box>
       )}
-      {/* Modal components would go here */}
+
+      {/* File upload dialog */}
+      <UploadDialog
+        open={showUploadDialog}
+        onClose={() => setShowUploadDialog(false)}
+        onUpload={handleUploadSubmit}
+        selectedFolder={selectedFolder}
+        isLoading={isLoading}
+      />
+
+      {/* Loading backdrop for long operations */}
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={isLoading && (isDragging || showUploadDialog)}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+      {/* Additional modal components would go here */}
       {/* These would be separate components for:
           - File viewer modal (showFile state)
           - Add form modal (addForm state)
           - Specify folder access form modal (specifyfolderAccessForm state)
-          - Add dropped file modal (if implementing drag and drop)
       */}
     </Box>
   );

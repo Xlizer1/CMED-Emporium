@@ -36,10 +36,11 @@ export const useContextMenu = () => {
 
   /**
    * Creates a context menu handler for the tree view
+   * Returns a function that matches the expected signature (folder, event)
    */
   const createTreeContextMenuHandler =
     (folder: Folder) =>
-    (event: React.MouseEvent): void => {
+    (folder: Folder, event: React.MouseEvent): void => {
       event.stopPropagation();
       handleContextMenu(
         event,
