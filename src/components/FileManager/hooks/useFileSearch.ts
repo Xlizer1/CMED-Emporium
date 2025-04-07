@@ -7,6 +7,7 @@ import { Folder, FileSearchOption } from "../types/types";
  */
 export const useFileSearch = (fileStructure: Folder[]) => {
   const [searchValue, setSearchValue] = useState<string>("");
+  const [selectedName, setSelectedName] = useState<string>("");
   const [searchBoxOptions, setSearchBoxOptions] = useState<FileSearchOption[]>(
     []
   );
@@ -120,5 +121,6 @@ export const useFileSearch = (fileStructure: Folder[]) => {
     setSearchBoxOptions,
     handleSearchChange,
     findFolderByName,
+    setSelectedName,
   };
 };

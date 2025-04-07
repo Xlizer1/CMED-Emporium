@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 
@@ -24,11 +24,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 // Types
-import { Folder } from "./types";
+import { Folder } from "./types/types";
 
-/**
- * Main FileManager component
- */
 export function FileManager() {
   // Get theme mode from Redux store
   const mode = useSelector((state: RootState) => state.theme.mode);
@@ -126,8 +123,8 @@ export function FileManager() {
       >
         {folder?.sub_classifications?.length
           ? folder?.sub_classifications
-              .filter((item) => !item?.file_name)
-              .map((subfolder) => (
+              .filter((item: Folder) => !item?.file_name)
+              .map((subfolder: Folder) => (
                 <CustomTreeItem
                   key={subfolder.id}
                   nodeId={subfolder?.nodeId || ""}
@@ -138,8 +135,8 @@ export function FileManager() {
                 >
                   {subfolder?.sub_classifications?.length
                     ? subfolder?.sub_classifications
-                        .filter((item) => !item?.file_name)
-                        .map((deepFolder) => (
+                        .filter((item: Folder) => !item?.file_name)
+                        .map((deepFolder: Folder) => (
                           <CustomTreeItem
                             key={deepFolder.id}
                             nodeId={deepFolder?.nodeId || ""}
@@ -168,6 +165,30 @@ export function FileManager() {
 
   return (
     <Box
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setIsDragging(false);
+        }
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        // Handle dropped files
+        if (e.dataTransfer.files.length > 0 && selectedFolder?.id) {
+          // Here you would handle the files
+          const droppedFiles = Array.from(e.dataTransfer.files);
+          console.log("Dropped files:", droppedFiles);
+
+          // You'd typically upload these files to your backend
+          // For example: uploadFiles(droppedFiles, selectedFolder.id);
+        }
+      }}
       sx={{
         height: "97.3vh",
         paddingTop: 7,
@@ -315,7 +336,47 @@ export function FileManager() {
           </Box>
         </Box>
       </Box>
-
+      {isDragging && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(74, 144, 226, 0.1)",
+            border: "3px dashed #4a90e2",
+            borderRadius: "8px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 999,
+            pointerEvents: "none",
+          }}
+        >
+          <Box
+            component="img"
+            src="/file.svg"
+            alt="Upload files"
+            sx={{
+              width: "80px",
+              height: "80px",
+              marginBottom: 2,
+              opacity: 0.7,
+            }}
+          />
+          <Typography
+            variant="h5"
+            sx={{ color: "#4a90e2", fontWeight: "bold" }}
+          >
+            Drop files here
+          </Typography>
+          <Typography variant="body1" sx={{ color: "#4a90e2", mt: 1 }}>
+            Upload to: {selectedFolder?.name || "Current folder"}
+          </Typography>
+        </Box>
+      )}
       {/* Modal components would go here */}
       {/* These would be separate components for:
           - File viewer modal (showFile state)

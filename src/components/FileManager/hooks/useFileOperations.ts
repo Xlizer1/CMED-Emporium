@@ -59,6 +59,45 @@ export const useFileOperations = () => {
     setAddForm(true);
   };
 
+  const uploadFiles = async (
+    files: File[],
+    folderId: number
+  ): Promise<void> => {
+    try {
+      // Create a FormData object to send the files
+      const formData = new FormData();
+
+      // Append each file to the FormData
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      // Add the folder ID to know where to store the files
+      formData.append("folderId", folderId.toString());
+
+      // In a real app, you would send this to your API
+      console.log("Uploading files to folder:", folderId, files);
+
+      // Example API call (uncomment and adapt when you have your API ready)
+      /*
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      // Refresh the file list after successful upload
+      getData();
+      */
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      // Handle error (show toast notification, etc.)
+    }
+  };
+
   /**
    * Deletes a file or folder
    */
@@ -109,5 +148,6 @@ export const useFileOperations = () => {
     updateFile,
     deleteFileOrFolder,
     downloadFile,
+    uploadFiles,
   };
 };
