@@ -2,7 +2,7 @@
 import axios from "axios";
 import { Folder } from "@/components/FileManager/types/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002/api";
 
 /**
  * Service for handling file uploads and file/folder operations
@@ -111,7 +111,13 @@ export const fileService = {
    * @returns Folder tree structure
    */
   getAllFolders: async () => {
-    const response = await axios.get(`${API_URL}/folders/tree`);
-    return response.data;
+    try {
+      const response = await axios.get(`${API_URL}/folders/tree`);
+      console.log("Folder tree response:", response.data);
+      return response.data.tree || [];
+    } catch (error) {
+      console.error("Error fetching folder tree:", error);
+      return [];
+    }
   },
 };
