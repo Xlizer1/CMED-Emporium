@@ -9,13 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@mui/material-nextjs": "^6.3.0",
+    "@auth0/nextjs-auth0": "3",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@googlemaps/react-wrapper": "^1.1.35",
     "@mui/icons-material": "^5.10.6",
     "@mui/lab": "^5.0.0-alpha.141",
     "@mui/material": "^5.10.8",
+    "@mui/material-nextjs": "^6.3.0",
     "@mui/styles": "^5.11.9",
     "@mui/utils": "^5.15.14",
     "@mui/x-data-grid": "^5.17.6",

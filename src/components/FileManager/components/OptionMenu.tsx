@@ -1,6 +1,6 @@
 // OptionMenu.tsx - Context menu for file manager items
 import React from "react";
-import { Menu, MenuItem, Typography } from "@mui/material";
+import { Menu, MenuItem, MenuList, Typography } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -96,7 +96,7 @@ export const OptionMenu: React.FC<OptionMenuProps> = ({
       {/* Add file and create folder menu items */}
       {(rightClickedItem?.parentFolder || rightClickedItem?.treeFolder) &&
         !rightClickedItem?.treeFolder && (
-          <>
+          <MenuList>
             <MenuItem
               onClick={(e) => {
                 e.stopPropagation();
@@ -128,7 +128,7 @@ export const OptionMenu: React.FC<OptionMenuProps> = ({
               <CreateNewFolderIcon style={{ color: "#F8D775" }} />
               <Typography>Create Folder</Typography>
             </MenuItem>
-          </>
+          </MenuList>
         )}
 
       {/* Delete menu item */}

@@ -2,9 +2,6 @@
 import { useState } from "react";
 import { Folder, MenuPosition } from "../types/types";
 
-/**
- * Custom hook for managing the context menu
- */
 export const useContextMenu = () => {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [menuPosition, setMenuPosition] = useState<MenuPosition>({
